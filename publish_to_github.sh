@@ -171,20 +171,45 @@ upsert_label "browser-compatibility" \
   "BFD4F2"
 
 say "Creating or updating GitHub Release ${VERSION}"
+
+# Verify that the tag exists on GitHub. This replaces the newer
+# gh release create --verify-tag option.
+gh api "repos/${FULL_REPO}/git/ref/tags/${VERSION}" >/dev/null || \
+  die "Remote tag ${VERSION} was not found."
+
 if gh release view "$VERSION" --repo "$FULL_REPO" >/dev/null 2>&1; then
-  gh release upload "$VERSION" "$ARCHIVE" --repo "$FULL_REPO" --clobber
+  echo "Release ${VERSION} already exists."
+
+  # Remove an existing asset with the same filename before uploading again.
+  release_id="$(
+    gh api "repos/${FULL_REPO}/releases/tags/${VERSION}" --jq '.id'
+  )"
+
+  asset_name="$(basename "$ARCHIVE")"
+
+  asset_id="$(
+    gh api "repos/${FULL_REPO}/releases/${release_id}/assets" \
+      --jq ".[] | select(.name == \"${asset_name}\") | .id" |
+      head -n 1
+  )"
+
+  if [[ -n "${asset_id:-}" ]]; then
+    gh api --method DELETE \
+      "repos/${FULL_REPO}/releases/assets/${asset_id}" >/dev/null
+  fi
+
+  gh release upload "$VERSION" "$ARCHIVE" \
+    --repo "$FULL_REPO"
+
   gh release edit "$VERSION" \
     --repo "$FULL_REPO" \
     --title "ClownWord Desert ${VERSION}" \
-    --notes-file CHANGELOG.md \
-    --latest
+    --notes-file CHANGELOG.md
 else
   gh release create "$VERSION" "$ARCHIVE" \
     --repo "$FULL_REPO" \
-    --verify-tag \
     --title "ClownWord Desert ${VERSION}" \
-    --notes-file CHANGELOG.md \
-    --latest
+    --notes-file CHANGELOG.md
 fi
 
 say "Enabling GitHub Pages from main:/"
