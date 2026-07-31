@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a gameplay or educational improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed feature
+      description: Describe the feature clearly.
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Educational or gameplay benefit
+      description: Explain how this improves learning or play.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Sight words and spelling
+        - Gameplay
+        - Accessibility
+        - Mobile controls
+        - Visuals and audio
+        - Classroom features
+        - Other
+    validations:
+      required: true

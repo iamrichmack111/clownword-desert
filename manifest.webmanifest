@@ -1,0 +1,10 @@
+{
+  "name": "ClownWord Desert",
+  "short_name": "ClownWord",
+  "description": "Spell sight words to defeat clown hordes in a 2D desert.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#17100b",
+  "theme_color": "#d28a2e",
+  "icons": []
+}

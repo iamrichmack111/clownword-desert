@@ -1,0 +1,19 @@
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local servers and logs
+*.log
+.python-version
+
+# Generated release packages
+dist/
+*.zip
+*.tar.gz

@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#d28a2e" />
+  <meta name="description" content="A 2D open-world desert spelling game where correctly typed sight words defeat clown hordes and seal circus tents." />
+  <meta name="author" content="Richmack" />
+  <meta property="og:title" content="ClownWord Desert" />
+  <meta property="og:description" content="Spell sight words to defeat clown hordes in a scrolling 2D desert." />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <title>ClownWord Desert</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #21150d;
+      --sand: #e6b85f;
+      --panel: rgba(30, 19, 12, 0.92);
+      --cream: #fff1c9;
+      --gold: #ffd166;
+      --red: #ef476f;
+      --green: #7ee081;
+      --blue: #57c7ff;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #17100b;
+      font-family: Inter, ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      image-rendering: auto;
+      background: #d99a3d;
+    }
+    #overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+    .panel {
+      pointer-events: auto;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(680px, calc(100vw - 32px));
+      transform: translate(-50%, -50%);
+      padding: 28px;
+      border: 2px solid rgba(255,255,255,.18);
+      border-radius: 22px;
+      color: var(--cream);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255,209,102,.16), transparent 38%),
+        linear-gradient(180deg, rgba(46,29,17,.98), rgba(24,16,11,.98));
+      box-shadow: 0 28px 90px rgba(0,0,0,.55);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(38px, 7vw, 72px);
+      line-height: .95;
+      letter-spacing: -3px;
+      color: var(--gold);
+      text-shadow: 0 4px 0 #7f3d1e, 0 10px 26px rgba(0,0,0,.55);
+    }
+    .tagline {
+      margin: 0 auto 18px;
+      max-width: 520px;
+      font-size: 18px;
+      line-height: 1.45;
+      color: #f8dfac;
+    }
+    .instructions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 18px 0;
+      text-align: left;
+    }
+    .instruction {
+      min-height: 92px;
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .instruction b {
+      display: block;
+      color: white;
+      margin-bottom: 4px;
+    }
+    label {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      margin: 4px 0 16px;
+      color: #f7e3bd;
+    }
+    select, button {
+      font: inherit;
+    }
+    select {
+      padding: 8px 10px;
+      border-radius: 9px;
+      color: white;
+      background: #332216;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .primary {
+      appearance: none;
+      border: 0;
+      border-radius: 13px;
+      padding: 13px 23px;
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+      color: #27160c;
+      background: linear-gradient(#ffe17f, #f4af39);
+      box-shadow: 0 6px 0 #96501f;
+    }
+    .primary:hover { filter: brightness(1.07); transform: translateY(-1px); }
+    .primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #96501f; }
+    .hidden { display: none !important; }
+    #spellBox {
+      position: absolute;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(560px, calc(100vw - 24px));
+      padding: 12px 14px 14px;
+      border-radius: 18px;
+      border: 2px solid rgba(255,255,255,.2);
+      background: rgba(30, 18, 10, .92);
+      color: white;
+      box-shadow: 0 12px 40px rgba(0,0,0,.42);
+      pointer-events: none;
+      text-align: center;
+    }
+    #targetLabel {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #f2c56f;
+    }
+    #targetWord {
+      margin: 2px 0 0;
+      font-size: clamp(27px, 4vw, 42px);
+      line-height: 1;
+      font-weight: 1000;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    #typedWord {
+      min-height: 31px;
+      margin-top: 7px;
+      border-radius: 9px;
+      padding: 3px 8px;
+      background: rgba(255,255,255,.08);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #80d9ff;
+    }
+    #spellHint {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #c7ad83;
+    }
+    #statusMessage {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(24px, 5vw, 52px);
+      font-weight: 1000;
+      color: white;
+      text-shadow: 0 4px 0 rgba(0,0,0,.35), 0 0 22px rgba(255,255,255,.25);
+      opacity: 0;
+      transition: opacity .15s;
+      pointer-events: none;
+      text-align: center;
+    }
+    #muteButton {
+      pointer-events: auto;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(24,16,11,.78);
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    @media (max-width: 650px) {
+      .panel { padding: 20px; }
+      .instructions { grid-template-columns: 1fr; }
+      .instruction { min-height: 0; }
+      #spellBox { bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" aria-label="ClownWord Desert game"></canvas>
+
+  <div id="overlay">
+    <section id="startPanel" class="panel">
+      <h1>CLOWNWORD<br>DESERT</h1>
+      <p class="tagline">
+        Circus tents have appeared across the open desert. Clown hordes keep pouring out.
+        Movement will help you survive, but <strong>only correctly spelled sight words</strong>
+        can clear the clowns and seal the tents.
+      </p>
+      <div class="instructions">
+        <div class="instruction"><b>Move</b>Arrow keys. Hold Shift to sprint.</div>
+        <div class="instruction"><b>Spell</b>Type the shown word, then press Enter.</div>
+        <div class="instruction"><b>Win</b>Seal every striped circus tent before your hearts run out.</div>
+      </div>
+      <label>
+        Sight-word level
+        <select id="gradeSelect">
+          <option value="preK">Pre-K / Kindergarten</option>
+          <option value="grade1" selected>Grade 1</option>
+          <option value="grade2">Grade 2</option>
+          <option value="grade3">Grade 3+</option>
+          <option value="mixed">Mixed Challenge</option>
+        </select>
+      </label>
+      <br>
+      <button id="startButton" class="primary">Enter the Desert</button>
+    </section>
+
+    <section id="endPanel" class="panel hidden">
+      <h1 id="endTitle">DESERT SAVED!</h1>
+      <p id="endStats" class="tagline"></p>
+      <button id="restartButton" class="primary">Play Again</button>
+    </section>
+
+    <div id="spellBox" class="hidden">
+      <div id="targetLabel">SPELL TO CAST</div>
+      <div id="targetWord">THE</div>
+      <div id="typedWord">&nbsp;</div>
+      <div id="spellHint">Arrow keys move • Type letters • Backspace fixes • Enter casts</div>
+    </div>
+
+    <div id="statusMessage"></div>
+    <button id="muteButton" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const startPanel = document.getElementById("startPanel");
+  const endPanel = document.getElementById("endPanel");
+  const startButton = document.getElementById("startButton");
+  const restartButton = document.getElementById("restartButton");
+  const gradeSelect = document.getElementById("gradeSelect");
+  const spellBox = document.getElementById("spellBox");
+  const targetWordEl = document.getElementById("targetWord");
+  const typedWordEl = document.getElementById("typedWord");
+  const statusMessage = document.getElementById("statusMessage");
+  const endTitle = document.getElementById("endTitle");
+  const endStats = document.getElementById("endStats");
+  const muteButton = document.getElementById("muteButton");
+
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const WORLD = { w: 3600, h: 2400 };
+  const TAU = Math.PI * 2;
+
+  const WORDS = {
+    preK: [
+      "a","and","away","big","blue","can","come","down","find","for","funny","go",
+      "help","here","I","in","is","it","jump","little","look","make","me","my","not",
+      "one","play","red","run","said","see","the","three","to","two","up","we","where","yellow","you"
+    ],
+    grade1: [
+      "after","again","an","any","as","ask","by","could","every","fly","from","give",
+      "going","had","has","her","him","his","how","just","know","let","live","may",
+      "of","old","once","open","over","put","round","some","stop","take","thank",
+      "them","then","think","walk","were","when"
+    ],
+    grade2: [
+      "always","around","because","been","before","best","both","buy","call","cold",
+      "does","don't","fast","first","five","found","gave","goes","green","its","made",
+      "many","off","or","pull","read","right","sing","sit","sleep","tell","their",
+      "these","those","upon","us","use","very","wash","which","why","wish","work","would","write","your"
+    ],
+    grade3: [
+      "about","better","bring","carry","clean","cut","done","draw","drink","eight",
+      "fall","far","full","got","grow","hold","hot","hurt","if","keep","kind","laugh",
+      "light","long","much","myself","never","only","own","pick","seven","shall","show",
+      "six","small","start","ten","today","together","try","warm"
+    ]
+  };
+  WORDS.mixed = [...WORDS.preK, ...WORDS.grade1, ...WORDS.grade2, ...WORDS.grade3];
+
+  let state = "menu";
+  let last = performance.now();
+  let elapsed = 0;
+  let correctCount = 0;
+  let wrongCount = 0;
+  let combo = 0;
+  let bestCombo = 0;
+  let typed = "";
+  let target = "the";
+  let statusTimer = 0;
+  let screenShake = 0;
+  let audioMuted = false;
+  let audioCtx = null;
+  let wordPool = WORDS.grade1;
+  let lastWord = "";
+
+  const keys = new Set();
+  const camera = { x: 0, y: 0 };
+  const player = {
+    x: WORLD.w / 2, y: WORLD.h / 2,
+    r: 22, speed: 250, hearts: 5, maxHearts: 5,
+    hurtTimer: 0, invuln: 0, facing: 0,
+    trail: []
+  };
+
+  let tents = [];
+  let clowns = [];
+  let particles = [];
+  let floaters = [];
+  let props = [];
+  let dunes = [];
+
+  function resize() {
+    const w = innerWidth;
+    const h = innerHeight;
+    canvas.width = Math.floor(w * DPR);
+    canvas.height = Math.floor(h * DPR);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  function mulberry32(seed) {
+    return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function dist(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rand(min, max) { return min + Math.random() * (max - min); }
+
+  function initWorld() {
+    const rng = mulberry32(912763);
+    props = [];
+    dunes = [];
+    tents = [];
+    clowns = [];
+    particles = [];
+    floaters = [];
+
+    for (let i = 0; i < 150; i++) {
+      const typeRoll = rng();
+      props.push({
+        x: 90 + rng() * (WORLD.w - 180),
+        y: 90 + rng() * (WORLD.h - 180),
+        type: typeRoll < .45 ? "cactus" : typeRoll < .77 ? "rock" : "skull",
+        scale: .7 + rng() * .75,
+        angle: rng() * TAU
+      });
+    }
+
+    for (let i = 0; i < 45; i++) {
+      dunes.push({
+        x: rng() * WORLD.w,
+        y: rng() * WORLD.h,
+        rx: 70 + rng() * 170,
+        ry: 20 + rng() * 55,
+        angle: -.2 + rng() * .4
+      });
+    }
+
+    const positions = [
+      [420, 430], [1150, 320], [2040, 390], [3140, 500],
+      [500, 1780], [1280, 2050], [2350, 1880], [3160, 2070]
+    ];
+    positions.forEach((p, i) => tents.push({
+      x: p[0], y: p[1], r: 58,
+      sealed: false,
+      progress: 0,
+      needed: 4 + (i % 3),
+      spawnTimer: 1 + rng() * 3,
+      pulse: rng() * TAU,
+      hue: i % 2 ? "blue" : "red"
+    }));
+
+    player.x = WORLD.w / 2;
+    player.y = WORLD.h / 2;
+    player.hearts = player.maxHearts;
+    player.hurtTimer = 0;
+    player.invuln = 0;
+    player.trail = [];
+    camera.x = player.x - innerWidth / 2;
+    camera.y = player.y - innerHeight / 2;
+  }
+
+  function chooseWord() {
+    let next = lastWord;
+    let tries = 0;
+    while (next === lastWord && tries++ < 10) {
+      next = wordPool[Math.floor(Math.random() * wordPool.length)];
+    }
+    lastWord = next;
+    target = next.toLowerCase();
+    typed = "";
+    updateSpellUI();
+  }
+
+  function updateSpellUI() {
+    targetWordEl.textContent = target;
+    typedWordEl.textContent = typed || "\u00a0";
+    typedWordEl.style.color =
+      target.startsWith(typed.toLowerCase()) ? "#80d9ff" : "#ff6d8d";
+  }
+
+  function startGame() {
+    wordPool = WORDS[gradeSelect.value] || WORDS.grade1;
+    elapsed = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    combo = 0;
+    bestCombo = 0;
+    initWorld();
+    chooseWord();
+    startPanel.classList.add("hidden");
+    endPanel.classList.add("hidden");
+    spellBox.classList.remove("hidden");
+    state = "playing";
+    last = performance.now();
+    unlockAudio();
+    beep(360, .05, "sine", .035);
+    requestAnimationFrame(loop);
+  }
+
+  function endGame(won) {
+    state = won ? "won" : "lost";
+    spellBox.classList.add("hidden");
+    endPanel.classList.remove("hidden");
+    endTitle.textContent = won ? "DESERT SAVED!" : "THE CLOWNS TOOK OVER";
+    const mins = Math.floor(elapsed / 60);
+    const secs = Math.floor(elapsed % 60).toString().padStart(2, "0");
+    endStats.innerHTML =
+      `${won ? "Every circus tent was sealed." : "Keep practicing and try another run."}<br>` +
+      `<strong>${correctCount}</strong> correct spells · ` +
+      `<strong>${bestCombo}</strong> best combo · ` +
+      `<strong>${mins}:${secs}</strong> survival time`;
+    if (won) {
+      chord([523, 659, 784], .5);
+    } else {
+      chord([180, 150, 120], .42);
+    }
+  }
+
+  startButton.addEventListener("click", startGame);
+  restartButton.addEventListener("click", startGame);
+
+  document.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+
+    if (["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)) {
+      e.preventDefault();
+    }
+
+    if (state !== "playing") {
+      if (e.key === "Enter" && !startPanel.classList.contains("hidden")) startGame();
+      return;
+    }
+
+    if (["arrowup","arrowdown","arrowleft","arrowright","shift"].includes(k)) {
+      keys.add(k);
+      return;
+    }
+
+    if (/^[a-z]$/i.test(e.key)) {
+      if (typed.length < 18) typed += e.key.toLowerCase();
+      updateSpellUI();
+      beep(460 + typed.length * 32, .02, "square", .012);
+    } else if (e.key === "Backspace") {
+      typed = typed.slice(0, -1);
+      updateSpellUI();
+    } else if (e.key === "Enter") {
+      castSpell();
+    }
+  });
+
+  document.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+
+  function castSpell() {
+    if (!typed) return;
+    if (typed.toLowerCase() === target.toLowerCase()) {
+      correctCount++;
+      combo++;
+      bestCombo = Math.max(bestCombo, combo);
+      correctSpell();
+      showStatus(combo >= 3 ? `SPELL COMBO ×${combo}!` : "CORRECT!");
+      chord(combo >= 5 ? [660, 880, 1100] : [520, 700], .16);
+    } else {
+      wrongCount++;
+      combo = 0;
+      showStatus(`TRY AGAIN: ${target.toUpperCase()}`, true);
+      spawnPenaltyClown();
+      beep(105, .18, "sawtooth", .06);
+    }
+    chooseWord();
+  }
+
+  function correctSpell() {
+    screenShake = 8;
+
+    const inRange = tents
+      .filter(t => !t.sealed)
+      .map(t => ({ t, d: dist(player.x, player.y, t.x, t.y) }))
+      .sort((a,b) => a.d - b.d);
+
+    // Correct spelling always removes clown villains.
+    const power = 3 + Math.min(5, Math.floor(combo / 2));
+    const nearest = clowns
+      .map(c => ({ c, d: dist(player.x, player.y, c.x, c.y) }))
+      .sort((a,b) => a.d - b.d)
+      .slice(0, power);
+
+    nearest.forEach(({ c }, idx) => {
+      c.dead = true;
+      burst(c.x, c.y, 13, idx % 2 ? "#57c7ff" : "#ffd166");
+      floaters.push({ x: c.x, y: c.y - 20, text: "POOF!", life: 1, max: 1 });
+    });
+
+    // If near a tent, spelling also seals it one step at a time.
+    const nearby = inRange.find(({ d }) => d < 350);
+    if (nearby) {
+      nearby.t.progress++;
+      burst(nearby.t.x, nearby.t.y - 20, 22, "#fff1a6");
+      floaters.push({
+        x: nearby.t.x,
+        y: nearby.t.y - 75,
+        text: `SEAL ${nearby.t.progress}/${nearby.t.needed}`,
+        life: 1.2,
+        max: 1.2
+      });
+      if (nearby.t.progress >= nearby.t.needed) {
+        nearby.t.sealed = true;
+        clowns.forEach(c => {
+          if (c.tent === nearby.t) {
+            c.dead = true;
+            burst(c.x, c.y, 8, "#7ee081");
+          }
+        });
+        showStatus("TENT SEALED!");
+        chord([440, 554, 659, 880], .3);
+      }
+    }
+
+    // Reward high streaks with a heart, up to max.
+    if (combo > 0 && combo % 10 === 0 && player.hearts < player.maxHearts) {
+      player.hearts++;
+      floaters.push({ x: player.x, y: player.y - 45, text: "+1 HEART", life: 1.4, max: 1.4 });
+    }
+  }
+
+  function spawnPenaltyClown() {
+    const angle = Math.random() * TAU;
+    const d = 300;
+    const t = tents.find(t => !t.sealed) || null;
+    clowns.push(makeClown(
+      clamp(player.x + Math.cos(angle) * d, 20, WORLD.w - 20),
+      clamp(player.y + Math.sin(angle) * d, 20, WORLD.h - 20),
+      t,
+      true
+    ));
+  }
+
+  function showStatus(text, bad = false) {
+    statusMessage.textContent = text;
+    statusMessage.style.color = bad ? "#ff7093" : "#fff4ad";
+    statusMessage.style.opacity = "1";
+    statusTimer = 1.1;
+  }
+
+  function makeClown(x, y, tent, angry = false) {
+    return {
+      x, y,
+      vx: 0, vy: 0,
+      r: angry ? 19 : rand(15, 19),
+      speed: angry ? 94 : rand(58, 82),
+      phase: Math.random() * TAU,
+      wiggle: rand(2, 5),
+      tent,
+      dead: false,
+      angry,
+      color: Math.random() < .5 ? "#ee3159" : "#2aa8df"
+    };
+  }
+
+  function spawnHorde(tent) {
+    const amount = 2 + Math.floor(elapsed / 55) + Math.floor(Math.random() * 3);
+    for (let i = 0; i < Math.min(7, amount); i++) {
+      const a = rand(-.7, .7) + Math.atan2(player.y - tent.y, player.x - tent.x);
+      const d = rand(35, 70);
+      clowns.push(makeClown(
+        tent.x + Math.cos(a) * d,
+        tent.y + Math.sin(a) * d + 18,
+        tent
+      ));
+    }
+    burst(tent.x, tent.y + 15, 12, "#d79aef");
+    beep(150, .09, "triangle", .03);
+  }
+
+  function burst(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * TAU;
+      const s = rand(35, 180);
+      particles.push({
+        x, y,
+        vx: Math.cos(a) * s,
+        vy: Math.sin(a) * s,
+        life: rand(.35, .9),
+        max: 1,
+        size: rand(2, 6),
+        color
+      });
+    }
+  }
+
+  function update(dt) {
+    elapsed += dt;
+    if (player.invuln > 0) player.invuln -= dt;
+    if (player.hurtTimer > 0) player.hurtTimer -= dt;
+    if (statusTimer > 0) {
+      statusTimer -= dt;
+      if (statusTimer <= 0) statusMessage.style.opacity = "0";
+    }
+    screenShake = Math.max(0, screenShake - dt * 28);
+
+    let dx = 0, dy = 0;
+    if (keys.has("arrowup")) dy--;
+    if (keys.has("arrowdown")) dy++;
+    if (keys.has("arrowleft")) dx--;
+    if (keys.has("arrowright")) dx++;
+
+    if (dx || dy) {
+      const mag = Math.hypot(dx, dy);
+      dx /= mag; dy /= mag;
+      const sprint = keys.has("shift") ? 1.52 : 1;
+      player.x += dx * player.speed * sprint * dt;
+      player.y += dy * player.speed * sprint * dt;
+      player.facing = Math.atan2(dy, dx);
+      if (Math.random() < dt * 12) {
+        player.trail.push({ x: player.x - dx * 20, y: player.y - dy * 20, life: .35 });
+      }
+    }
+
+    player.x = clamp(player.x, 30, WORLD.w - 30);
+    player.y = clamp(player.y, 30, WORLD.h - 30);
+
+    player.trail.forEach(p => p.life -= dt);
+    player.trail = player.trail.filter(p => p.life > 0);
+
+    tents.forEach(t => {
+      t.pulse += dt * 2;
+      if (t.sealed) return;
+      t.spawnTimer -= dt;
+      const distanceToPlayer = dist(player.x, player.y, t.x, t.y);
+      if (t.spawnTimer <= 0 && distanceToPlayer < 1250 && clowns.length < 95) {
+        spawnHorde(t);
+        const difficulty = Math.max(2.4, 6.5 - elapsed / 70);
+        t.spawnTimer = difficulty + Math.random() * 2.8;
+      }
+    });
+
+    clowns.forEach((c, index) => {
+      if (c.dead) return;
+      c.phase += dt * c.wiggle;
+      const ax = player.x - c.x;
+      const ay = player.y - c.y;
+      const d = Math.max(1, Math.hypot(ax, ay));
+
+      let sepX = 0, sepY = 0;
+      for (let j = Math.max(0, index - 8); j < Math.min(clowns.length, index + 8); j++) {
+        if (j === index || clowns[j].dead) continue;
+        const o = clowns[j];
+        const odx = c.x - o.x;
+        const ody = c.y - o.y;
+        const od = Math.hypot(odx, ody);
+        if (od > 0 && od < 42) {
+          sepX += odx / od * (42 - od);
+          sepY += ody / od * (42 - od);
+        }
+      }
+
+      const wiggleX = Math.cos(c.phase) * 16;
+      const wiggleY = Math.sin(c.phase * 1.3) * 16;
+      const tx = ax / d * c.speed + sepX * 2 + wiggleX;
+      const ty = ay / d * c.speed + sepY * 2 + wiggleY;
+      c.vx = lerp(c.vx, tx, 1 - Math.pow(.001, dt));
+      c.vy = lerp(c.vy, ty, 1 - Math.pow(.001, dt));
+      c.x += c.vx * dt;
+      c.y += c.vy * dt;
+
+      if (d < player.r + c.r + 4 && player.invuln <= 0) {
+        player.hearts--;
+        player.invuln = 1.15;
+        player.hurtTimer = .32;
+        screenShake = 12;
+        combo = 0;
+        const knock = 75;
+        c.x -= ax / d * knock;
+        c.y -= ay / d * knock;
+        burst(player.x, player.y, 18, "#ff5577");
+        floaters.push({ x: player.x, y: player.y - 45, text: "-1 HEART", life: 1.2, max: 1.2 });
+        beep(90, .25, "sawtooth", .07);
+        if (player.hearts <= 0) endGame(false);
+      }
+    });
+
+    clowns = clowns.filter(c => !c.dead);
+
+    particles.forEach(p => {
+      p.life -= dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= Math.pow(.06, dt);
+      p.vy *= Math.pow(.06, dt);
+    });
+    particles = particles.filter(p => p.life > 0);
+
+    floaters.forEach(f => { f.life -= dt; f.y -= 38 * dt; });
+    floaters = floaters.filter(f => f.life > 0);
+
+    const targetCamX = clamp(player.x - innerWidth / 2, 0, Math.max(0, WORLD.w - innerWidth));
+    const targetCamY = clamp(player.y - innerHeight / 2, 0, Math.max(0, WORLD.h - innerHeight));
+    camera.x = lerp(camera.x, targetCamX, 1 - Math.pow(.00002, dt));
+    camera.y = lerp(camera.y, targetCamY, 1 - Math.pow(.00002, dt));
+
+    if (tents.every(t => t.sealed)) endGame(true);
+  }
+
+  function worldToScreen(x, y) {
+    return { x: x - camera.x, y: y - camera.y };
+  }
+
+  function visible(x, y, margin = 100) {
+    const sx = x - camera.x, sy = y - camera.y;
+    return sx > -margin && sy > -margin && sx < innerWidth + margin && sy < innerHeight + margin;
+  }
+
+  function draw() {
+    const shakeX = screenShake ? rand(-screenShake, screenShake) : 0;
+    const shakeY = screenShake ? rand(-screenShake, screenShake) : 0;
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
+    drawDesert();
+    drawWorldBorder();
+    drawDunes();
+    drawProps();
+    drawOasis();
+    drawTents();
+    drawTrails();
+    drawClowns();
+    drawPlayer();
+    drawParticles();
+    drawFloaters();
+
+    ctx.restore();
+    drawHUD();
+    drawMinimap();
+    drawVignette();
+  }
+
+  function drawDesert() {
+    const g = ctx.createLinearGradient(0, 0, 0, innerHeight);
+    g.addColorStop(0, "#dea44b");
+    g.addColorStop(1, "#c77c2f");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+
+    // Sparse sand texture in screen space.
+    ctx.globalAlpha = .16;
+    ctx.fillStyle = "#ffe19a";
+    const grid = 80;
+    const ox = -((camera.x * .2) % grid);
+    const oy = -((camera.y * .2) % grid);
+    for (let y = oy; y < innerHeight; y += grid) {
+      for (let x = ox; x < innerWidth; x += grid) {
+        ctx.beginPath();
+        ctx.arc(x + ((y / grid) % 2) * 25, y, 1.4, 0, TAU);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawWorldBorder() {
+    const topLeft = worldToScreen(0, 0);
+    ctx.strokeStyle = "rgba(92,48,19,.6)";
+    ctx.lineWidth = 22;
+    ctx.strokeRect(topLeft.x, topLeft.y, WORLD.w, WORLD.h);
+  }
+
+  function drawDunes() {
+    dunes.forEach(d => {
+      if (!visible(d.x, d.y, 220)) return;
+      const p = worldToScreen(d.x, d.y);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(d.angle);
+      ctx.fillStyle = "rgba(255,224,145,.12)";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, d.rx, d.ry, 0, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(129,70,24,.14)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, 0, d.rx * .78, Math.PI * .05, Math.PI * .95);
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+
+  function drawProps() {
+    props.forEach(p => {
+      if (!visible(p.x, p.y, 80)) return;
+      const s = worldToScreen(p.x, p.y);
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(p.angle);
+      ctx.scale(p.scale, p.scale);
+      if (p.type === "cactus") drawCactus();
+      else if (p.type === "rock") drawRock();
+      else drawSkull();
+      ctx.restore();
+    });
+  }
+
+  function drawCactus() {
+    ctx.fillStyle = "rgba(0,0,0,.15)";
+    ctx.beginPath(); ctx.ellipse(5, 26, 21, 7, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "#315f36";
+    ctx.lineWidth = 11;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, 27); ctx.lineTo(0, -24);
+    ctx.moveTo(0, -5); ctx.lineTo(-14, -13); ctx.lineTo(-14, -25);
+    ctx.moveTo(0, 4); ctx.lineTo(15, -4); ctx.lineTo(15, -15);
+    ctx.stroke();
+    ctx.strokeStyle = "#4f8c4d";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+  }
+
+  function drawRock() {
+    ctx.fillStyle = "rgba(0,0,0,.15)";
+    ctx.beginPath(); ctx.ellipse(4, 15, 25, 8, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#8e5e3c";
+    ctx.beginPath();
+    ctx.moveTo(-21, 10); ctx.lineTo(-14, -11); ctx.lineTo(4, -18);
+    ctx.lineTo(22, -4); ctx.lineTo(18, 13); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    ctx.beginPath(); ctx.moveTo(-12,-10); ctx.lineTo(4,-15); ctx.lineTo(10,-7); ctx.closePath(); ctx.fill();
+  }
+
+  function drawSkull() {
+    ctx.fillStyle = "rgba(0,0,0,.14)";
+    ctx.beginPath(); ctx.ellipse(0, 9, 18, 6, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = "#d9c59b";
+    ctx.beginPath(); ctx.arc(0, -3, 13, 0, TAU); ctx.fill();
+    ctx.fillRect(-8, 5, 16, 7);
+    ctx.fillStyle = "#39261a";
+    ctx.beginPath(); ctx.arc(-5, -5, 3, 0, TAU); ctx.arc(5, -5, 3, 0, TAU); ctx.fill();
+    ctx.fillRect(-2, 1, 4, 4);
+  }
+
+  function drawOasis() {
+    const x = WORLD.w / 2, y = WORLD.h / 2 + 110;
+    if (!visible(x, y, 260)) return;
+    const p = worldToScreen(x, y);
+    ctx.fillStyle = "rgba(91,56,24,.28)";
+    ctx.beginPath(); ctx.ellipse(p.x + 6, p.y + 10, 190, 74, -.1, 0, TAU); ctx.fill();
+    const g = ctx.createRadialGradient(p.x - 35, p.y - 15, 5, p.x, p.y, 190);
+    g.addColorStop(0, "#6ee7f3");
+    g.addColorStop(.65, "#238daa");
+    g.addColorStop(1, "#176177");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(p.x, p.y, 170, 62, -.1, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.28)";
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(p.x - 25, p.y - 8, 75, 18, -.1, 0, TAU); ctx.stroke();
+  }
+
+  function drawTents() {
+    tents.forEach(t => {
+      if (!visible(t.x, t.y, 120)) return;
+      const p = worldToScreen(t.x, t.y);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+
+      ctx.fillStyle = "rgba(0,0,0,.23)";
+      ctx.beginPath(); ctx.ellipse(7, 34, 70, 22, 0, 0, TAU); ctx.fill();
+
+      if (t.sealed) {
+        ctx.globalAlpha = .72;
+        ctx.fillStyle = "#4e5660";
+        ctx.beginPath();
+        ctx.moveTo(-55, 25); ctx.lineTo(0, -58); ctx.lineTo(55, 25); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#aeb9c2";
+        ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(-45, 19); ctx.lineTo(45, 19); ctx.stroke();
+        ctx.fillStyle = "#7ee081";
+        ctx.beginPath(); ctx.arc(0, -2, 23 + Math.sin(t.pulse) * 2, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#18351f";
+        ctx.font = "900 26px system-ui";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("✓", 0, -1);
+        ctx.restore();
+        return;
+      }
+
+      const main = t.hue === "red" ? "#e53e57" : "#2794c7";
+      const light = "#fff0cf";
+
+      ctx.fillStyle = main;
+      ctx.beginPath();
+      ctx.moveTo(-62, 28); ctx.lineTo(0, -72); ctx.lineTo(62, 28); ctx.closePath(); ctx.fill();
+
+      ctx.fillStyle = light;
+      for (let i = -2; i <= 2; i += 2) {
+        ctx.beginPath();
+        ctx.moveTo(i * 15 - 10, 28);
+        ctx.lineTo(i * 4, -58);
+        ctx.lineTo(i * 15 + 10, 28);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "#16110d";
+      ctx.beginPath();
+      ctx.moveTo(-17, 28); ctx.quadraticCurveTo(0, -2, 17, 28); ctx.closePath(); ctx.fill();
+
+      ctx.fillStyle = "#562315";
+      ctx.fillRect(-3, -91, 6, 25);
+      ctx.fillStyle = "#ffd166";
+      ctx.beginPath();
+      ctx.moveTo(3, -89); ctx.lineTo(31, -80); ctx.lineTo(3, -70); ctx.closePath(); ctx.fill();
+
+      // Seal progress pips.
+      const totalW = t.needed * 11;
+      for (let i = 0; i < t.needed; i++) {
+        ctx.fillStyle = i < t.progress ? "#7ee081" : "rgba(0,0,0,.5)";
+        ctx.beginPath();
+        ctx.arc(-totalW / 2 + 6 + i * 11, 43, 4, 0, TAU);
+        ctx.fill();
+      }
+
+      if (dist(player.x, player.y, t.x, t.y) < 350) {
+        ctx.strokeStyle = `rgba(255,241,166,${.45 + Math.sin(t.pulse) * .15})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, 74 + Math.sin(t.pulse) * 4, 0, TAU);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    });
+  }
+
+  function drawTrails() {
+    player.trail.forEach(p => {
+      const s = worldToScreen(p.x, p.y);
+      ctx.globalAlpha = p.life / .35 * .25;
+      ctx.fillStyle = "#6f481f";
+      ctx.beginPath(); ctx.ellipse(s.x, s.y, 12, 6, 0, 0, TAU); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawClowns() {
+    clowns.forEach(c => {
+      if (!visible(c.x, c.y, 60)) return;
+      const p = worldToScreen(c.x, c.y);
+      ctx.save();
+      ctx.translate(p.x, p.y + Math.sin(c.phase * 2) * 2);
+
+      ctx.fillStyle = "rgba(0,0,0,.2)";
+      ctx.beginPath(); ctx.ellipse(3, c.r + 10, c.r + 5, 7, 0, 0, TAU); ctx.fill();
+
+      // legs
+      ctx.strokeStyle = "#2c1b35";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-7, c.r - 2); ctx.lineTo(-8, c.r + 13);
+      ctx.moveTo(7, c.r - 2); ctx.lineTo(9, c.r + 13);
+      ctx.stroke();
+
+      // body
+      ctx.fillStyle = c.color;
+      ctx.beginPath(); ctx.ellipse(0, 5, c.r, c.r + 4, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#ffd166";
+      ctx.beginPath(); ctx.arc(0, -2, 3, 0, TAU); ctx.arc(0, 8, 3, 0, TAU); ctx.fill();
+
+      // head
+      ctx.fillStyle = "#fff3df";
+      ctx.beginPath(); ctx.arc(0, -c.r + 2, c.r * .78, 0, TAU); ctx.fill();
+
+      // hair
+      ctx.fillStyle = c.angry ? "#ff2c55" : "#8e44ad";
+      for (let a = Math.PI; a <= TAU; a += Math.PI / 5) {
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * c.r * .72, -c.r + 2 + Math.sin(a) * c.r * .72, 6, 0, TAU);
+        ctx.fill();
+      }
+
+      // eyes
+      ctx.fillStyle = "#20140d";
+      ctx.beginPath(); ctx.arc(-5, -c.r, 2.5, 0, TAU); ctx.arc(5, -c.r, 2.5, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#ef476f";
+      ctx.beginPath(); ctx.arc(0, -c.r + 5, 4, 0, TAU); ctx.fill();
+
+      // grin
+      ctx.strokeStyle = "#7f1d38";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -c.r + 7, 8, .1, Math.PI - .1);
+      ctx.stroke();
+
+      ctx.restore();
+    });
+  }
+
+  function drawPlayer() {
+    const p = worldToScreen(player.x, player.y);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+
+    if (player.invuln > 0 && Math.floor(player.invuln * 12) % 2 === 0) ctx.globalAlpha = .35;
+
+    if (player.hurtTimer > 0) ctx.rotate(Math.sin(player.hurtTimer * 45) * .15);
+
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    ctx.beginPath(); ctx.ellipse(4, 23, 25, 9, 0, 0, TAU); ctx.fill();
+
+    // cloak
+    ctx.fillStyle = "#293e63";
+    ctx.beginPath();
+    ctx.moveTo(-19, 18); ctx.quadraticCurveTo(-16, -8, 0, -16);
+    ctx.quadraticCurveTo(16, -8, 19, 18); ctx.closePath(); ctx.fill();
+
+    // scarf
+    ctx.strokeStyle = "#ef476f";
+    ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.arc(0, -5, 16, .1, Math.PI - .1); ctx.stroke();
+
+    // head
+    ctx.fillStyle = "#8c5a3c";
+    ctx.beginPath(); ctx.arc(0, -17, 12, 0, TAU); ctx.fill();
+
+    // hat
+    ctx.fillStyle = "#5c321e";
+    ctx.fillRect(-17, -28, 34, 5);
+    ctx.fillRect(-10, -38, 20, 12);
+
+    // wand points toward facing.
+    ctx.rotate(player.facing);
+    ctx.strokeStyle = "#f5d18b";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(10, 3); ctx.lineTo(31, 3); ctx.stroke();
+    ctx.fillStyle = "#fff4ad";
+    ctx.beginPath(); ctx.arc(34, 3, 5 + Math.sin(elapsed * 7) * 1.3, 0, TAU); ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    particles.forEach(p => {
+      if (!visible(p.x, p.y, 20)) return;
+      const s = worldToScreen(p.x, p.y);
+      ctx.globalAlpha = clamp(p.life / .7, 0, 1);
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(s.x, s.y, p.size, 0, TAU); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFloaters() {
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "900 18px system-ui";
+    floaters.forEach(f => {
+      const s = worldToScreen(f.x, f.y);
+      ctx.globalAlpha = clamp(f.life / f.max, 0, 1);
+      ctx.fillStyle = "#fff4ad";
+      ctx.strokeStyle = "rgba(40,20,10,.75)";
+      ctx.lineWidth = 5;
+      ctx.strokeText(f.text, s.x, s.y);
+      ctx.fillText(f.text, s.x, s.y);
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawHUD() {
+    const pad = 16;
+
+    // Top-left panel.
+    ctx.fillStyle = "rgba(30,18,10,.82)";
+    roundRect(ctx, pad, pad, 265, 104, 16);
+    ctx.fill();
+
+    ctx.font = "900 15px system-ui";
+    ctx.fillStyle = "#f2c56f";
+    ctx.textAlign = "left";
+    ctx.fillText("DESERT WARDEN", pad + 15, pad + 24);
+
+    for (let i = 0; i < player.maxHearts; i++) {
+      drawHeart(pad + 22 + i * 31, pad + 48, 10, i < player.hearts ? "#ef476f" : "#5c3a35");
+    }
+
+    ctx.font = "800 14px system-ui";
+    ctx.fillStyle = "#fff1c9";
+    ctx.fillText(`Clowns: ${clowns.length}`, pad + 15, pad + 78);
+    ctx.fillText(`Combo: ×${combo}`, pad + 125, pad + 78);
+    ctx.fillStyle = "#cbb18a";
+    ctx.font = "700 12px system-ui";
+    ctx.fillText("Only spelling can clear them.", pad + 15, pad + 96);
+
+    // Top-center objective.
+    const sealed = tents.filter(t => t.sealed).length;
+    const ow = 260;
+    const ox = innerWidth / 2 - ow / 2;
+    ctx.fillStyle = "rgba(30,18,10,.78)";
+    roundRect(ctx, ox, 16, ow, 55, 14);
+    ctx.fill();
+    ctx.font = "900 13px system-ui";
+    ctx.fillStyle = "#f2c56f";
+    ctx.textAlign = "center";
+    ctx.fillText("CIRCUS TENTS SEALED", innerWidth / 2, 36);
+    ctx.font = "1000 20px system-ui";
+    ctx.fillStyle = "#fff1c9";
+    ctx.fillText(`${sealed} / ${tents.length}`, innerWidth / 2, 59);
+  }
+
+  function drawMinimap() {
+    const w = 184, h = 126;
+    const x = innerWidth - w - 16;
+    const y = innerHeight > 520 ? 70 : 16;
+
+    ctx.fillStyle = "rgba(30,18,10,.84)";
+    roundRect(ctx, x, y, w, h, 14);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.15)";
+    ctx.stroke();
+
+    const mx = x + 10, my = y + 10, mw = w - 20, mh = h - 20;
+    ctx.fillStyle = "#b8752c";
+    ctx.fillRect(mx, my, mw, mh);
+
+    tents.forEach(t => {
+      ctx.fillStyle = t.sealed ? "#7ee081" : (t.hue === "red" ? "#ef476f" : "#57c7ff");
+      ctx.beginPath();
+      ctx.arc(mx + t.x / WORLD.w * mw, my + t.y / WORLD.h * mh, t.sealed ? 3 : 4.5, 0, TAU);
+      ctx.fill();
+    });
+
+    ctx.fillStyle = "#fff4ad";
+    ctx.beginPath();
+    ctx.arc(mx + player.x / WORLD.w * mw, my + player.y / WORLD.h * mh, 4, 0, TAU);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,255,255,.42)";
+    ctx.strokeRect(
+      mx + camera.x / WORLD.w * mw,
+      my + camera.y / WORLD.h * mh,
+      innerWidth / WORLD.w * mw,
+      innerHeight / WORLD.h * mh
+    );
+  }
+
+  function drawVignette() {
+    const g = ctx.createRadialGradient(
+      innerWidth / 2, innerHeight / 2, Math.min(innerWidth, innerHeight) * .2,
+      innerWidth / 2, innerHeight / 2, Math.max(innerWidth, innerHeight) * .75
+    );
+    g.addColorStop(.55, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(35,14,4,.34)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.arcTo(x + w, y, x + w, y + h, rr);
+    c.arcTo(x + w, y + h, x, y + h, rr);
+    c.arcTo(x, y + h, x, y, rr);
+    c.arcTo(x, y, x + w, y, rr);
+    c.closePath();
+  }
+
+  function drawHeart(x, y, size, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, size * .35);
+    ctx.bezierCurveTo(-size * 1.2, -size * .45, -size * .95, -size * 1.15, -size * .38, -size * 1.05);
+    ctx.bezierCurveTo(-size * .08, -size, 0, -size * .72, 0, -size * .55);
+    ctx.bezierCurveTo(0, -size * .72, size * .08, -size, size * .38, -size * 1.05);
+    ctx.bezierCurveTo(size * .95, -size * 1.15, size * 1.2, -size * .45, 0, size * .35);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function unlockAudio() {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) audioCtx = new AudioContext();
+    }
+    if (audioCtx?.state === "suspended") audioCtx.resume();
+  }
+
+  function beep(freq, duration, type = "sine", volume = .03) {
+    if (audioMuted || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  }
+
+  function chord(notes, duration) {
+    notes.forEach((n, i) => setTimeout(() => beep(n, duration, "triangle", .025), i * 55));
+  }
+
+  muteButton.addEventListener("click", () => {
+    audioMuted = !audioMuted;
+    muteButton.textContent = audioMuted ? "🔇" : "🔊";
+    unlockAudio();
+    if (!audioMuted) beep(540, .07, "sine", .03);
+  });
+
+  function loop(now) {
+    if (state !== "playing") {
+      draw();
+      return;
+    }
+    const dt = Math.min(.034, (now - last) / 1000 || .016);
+    last = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  initWorld();
+  draw();
+})();
+</script>
+</body>
+</html>
