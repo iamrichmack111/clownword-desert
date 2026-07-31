@@ -124,26 +124,51 @@ gh repo edit "${edit_args[@]}"
 gh api --method PATCH "repos/${FULL_REPO}"   -F has_discussions=true >/dev/null
 
 say "Creating useful repository labels"
-gh label create "education" \
-  --repo "$FULL_REPO" \
-  --description "Educational content or learning mechanics" \
-  --color "1D76DB" --force
-gh label create "gameplay" \
-  --repo "$FULL_REPO" \
-  --description "Gameplay and balance changes" \
-  --color "F9D0C4" --force
-gh label create "accessibility" \
-  --repo "$FULL_REPO" \
-  --description "Accessibility improvements" \
-  --color "0E8A16" --force
-gh label create "good first issue" \
-  --repo "$FULL_REPO" \
-  --description "Good for a first contribution" \
-  --color "7057FF" --force
-gh label create "browser-compatibility" \
-  --repo "$FULL_REPO" \
-  --description "Browser-specific behavior" \
-  --color "BFD4F2" --force
+
+upsert_label() {
+  local name="$1"
+  local description="$2"
+  local color="$3"
+  local encoded_name
+
+  encoded_name="$(
+    python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=""))' "$name"
+  )"
+
+  if gh api "repos/${FULL_REPO}/labels/${encoded_name}" >/dev/null 2>&1; then
+    gh api --method PATCH \
+      "repos/${FULL_REPO}/labels/${encoded_name}" \
+      -f new_name="$name" \
+      -f description="$description" \
+      -f color="$color" >/dev/null
+  else
+    gh api --method POST \
+      "repos/${FULL_REPO}/labels" \
+      -f name="$name" \
+      -f description="$description" \
+      -f color="$color" >/dev/null
+  fi
+}
+
+upsert_label "education" \
+  "Educational content or learning mechanics" \
+  "1D76DB"
+
+upsert_label "gameplay" \
+  "Gameplay and balance changes" \
+  "F9D0C4"
+
+upsert_label "accessibility" \
+  "Accessibility improvements" \
+  "0E8A16"
+
+upsert_label "good first issue" \
+  "Good for a first contribution" \
+  "7057FF"
+
+upsert_label "browser-compatibility" \
+  "Browser-specific behavior" \
+  "BFD4F2"
 
 say "Creating or updating GitHub Release ${VERSION}"
 if gh release view "$VERSION" --repo "$FULL_REPO" >/dev/null 2>&1; then
