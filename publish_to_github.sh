@@ -110,7 +110,6 @@ edit_args=(
   --description "$DESCRIPTION"
   --homepage "$HOMEPAGE"
   --enable-issues
-  --enable-discussions
   --enable-wiki=false
   --delete-branch-on-merge
   --enable-squash-merge
@@ -120,6 +119,9 @@ for topic in "${TOPICS[@]}"; do
   edit_args+=(--add-topic "$topic")
 done
 gh repo edit "${edit_args[@]}"
+
+# Enable Discussions through the API for older GitHub CLI versions.
+gh api --method PATCH "repos/${FULL_REPO}"   -F has_discussions=true >/dev/null
 
 say "Creating useful repository labels"
 gh label create "education" \
