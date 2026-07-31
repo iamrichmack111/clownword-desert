@@ -187,11 +187,11 @@
       pointer-events: none;
       text-align: center;
     }
-    #muteButton {
+    #muteButton,
+    #pauseButton {
       pointer-events: auto;
       position: absolute;
       top: 12px;
-      right: 12px;
       width: 44px;
       height: 44px;
       border-radius: 50%;
@@ -200,6 +200,140 @@
       color: white;
       cursor: pointer;
       font-size: 18px;
+    }
+    #muteButton { right: 12px; }
+    #pauseButton { right: 64px; }
+    #pauseButton:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+    .secondary {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 13px;
+      padding: 12px 18px;
+      font-weight: 850;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--cream);
+      background: rgba(255,255,255,.08);
+    }
+    .secondary:hover { background: rgba(255,255,255,.14); }
+    .danger { color: #ffd8df; border-color: rgba(239,71,111,.5); }
+    .buttonRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .fieldGroup {
+      display: grid;
+      gap: 6px;
+      width: min(420px, 100%);
+      margin: 0 auto 12px;
+      text-align: left;
+    }
+    .fieldGroup label {
+      display: block;
+      margin: 0;
+      font-size: 13px;
+      font-weight: 900;
+      color: #f2c56f;
+      letter-spacing: .4px;
+    }
+    .fieldGroup input,
+    .fieldGroup select,
+    .fieldGroup textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      color: white;
+      background: #332216;
+      border: 1px solid rgba(255,255,255,.18);
+      font: inherit;
+    }
+    .fieldGroup textarea {
+      min-height: 112px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    #spellActions {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+      pointer-events: auto;
+    }
+    #changeTargetButton {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      padding: 5px 12px;
+      color: #fff1c9;
+      background: rgba(255,255,255,.08);
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    #changeTargetButton:hover { background: rgba(255,255,255,.16); }
+    .smallNote {
+      margin: 10px auto 0;
+      color: #c7ad83;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    #recordsPanel {
+      width: min(980px, calc(100vw - 24px));
+      max-height: min(760px, calc(100vh - 24px));
+      overflow: auto;
+      text-align: left;
+    }
+    #recordsPanel h1,
+    #recordsPanel .tagline {
+      text-align: center;
+    }
+    .recordsWrap {
+      overflow-x: auto;
+      margin: 14px 0;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+    }
+    #recordsTable {
+      width: 100%;
+      min-width: 820px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    #recordsTable th,
+    #recordsTable td {
+      padding: 10px 9px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      text-align: left;
+      white-space: nowrap;
+    }
+    #recordsTable th {
+      position: sticky;
+      top: 0;
+      color: #2b190d;
+      background: #f2c56f;
+      z-index: 1;
+    }
+    #recordsTable tr:last-child td { border-bottom: 0; }
+    #recordsEmpty {
+      text-align: center;
+      color: #c7ad83;
+      padding: 26px;
+    }
+    .gradeBadge {
+      display: inline-flex;
+      min-width: 48px;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 1000;
+      color: #1c130c;
+      background: #ffd166;
     }
     @media (max-width: 650px) {
       .panel { padding: 20px; }
@@ -222,37 +356,116 @@
       </p>
       <div class="instructions">
         <div class="instruction"><b>Move</b>Arrow keys. Hold Shift to sprint.</div>
-        <div class="instruction"><b>Spell</b>Type the shown word, then press Enter.</div>
-        <div class="instruction"><b>Win</b>Seal every striped circus tent before your hearts run out.</div>
+        <div class="instruction"><b>Spell</b>Each clown carries a word. Type the highlighted clown's word, including P, then press Enter.</div>
+        <div class="instruction"><b>Choose</b>Press Tab or use Change Target to pick another clown. Escape pauses.</div>
       </div>
-      <label>
-        Sight-word level
+
+      <div class="fieldGroup">
+        <label for="studentName">Student name</label>
+        <input id="studentName" maxlength="60" autocomplete="name" placeholder="Enter the student's name" />
+      </div>
+
+      <div class="fieldGroup">
+        <label for="gradeSelect">Sight-word level</label>
         <select id="gradeSelect">
           <option value="preK">Pre-K / Kindergarten</option>
           <option value="grade1" selected>Grade 1</option>
           <option value="grade2">Grade 2</option>
           <option value="grade3">Grade 3+</option>
           <option value="mixed">Mixed Challenge</option>
+          <option value="custom">Custom Word List</option>
         </select>
-      </label>
-      <br>
-      <button id="startButton" class="primary">Enter the Desert</button>
+      </div>
+
+      <div id="customWordsGroup" class="fieldGroup hidden">
+        <label for="customWords">Custom words</label>
+        <textarea id="customWords" spellcheck="false" placeholder="Enter at least five words separated by spaces, commas, or new lines."></textarea>
+        <span class="smallNote">Words may contain letters, apostrophes, or hyphens. This list is saved only in this browser.</span>
+      </div>
+
+      <div class="buttonRow">
+        <button id="startButton" class="primary">Enter the Desert</button>
+        <button id="openRecordsButton" class="secondary">Student Records</button>
+      </div>
+      <p class="smallNote">Grades and session results are saved only in this browser until exported.</p>
+    </section>
+
+    <section id="pausePanel" class="panel hidden">
+      <h1>PAUSED</h1>
+      <p class="tagline">The desert is frozen. Press Escape or resume when ready.</p>
+      <div class="buttonRow">
+        <button id="resumeButton" class="primary">Resume</button>
+        <button id="changeWordsButton" class="secondary">Change Words</button>
+        <button id="pauseRecordsButton" class="secondary">Student Records</button>
+        <button id="quitButton" class="secondary danger">End Session</button>
+      </div>
+    </section>
+
+    <section id="wordsPanel" class="panel hidden">
+      <h1>CHANGE WORDS</h1>
+      <p class="tagline">Enter at least five words. Applying the list gives every active clown a new word.</p>
+      <div class="fieldGroup">
+        <label for="wordEditor">Word list</label>
+        <textarea id="wordEditor" spellcheck="false" placeholder="example, because, together, read, write"></textarea>
+      </div>
+      <div class="buttonRow">
+        <button id="applyWordsButton" class="primary">Apply Words</button>
+        <button id="cancelWordsButton" class="secondary">Cancel</button>
+      </div>
     </section>
 
     <section id="endPanel" class="panel hidden">
       <h1 id="endTitle">DESERT SAVED!</h1>
       <p id="endStats" class="tagline"></p>
-      <button id="restartButton" class="primary">Play Again</button>
+      <div class="buttonRow">
+        <button id="restartButton" class="primary">Play Again</button>
+        <button id="endRecordsButton" class="secondary">Student Records</button>
+        <button id="exportLatestButton" class="secondary">Export This Grade</button>
+      </div>
+    </section>
+
+    <section id="recordsPanel" class="panel hidden">
+      <h1>STUDENT RECORDS</h1>
+      <p class="tagline">Saved grades from this browser. Grade = 70% spelling accuracy + 20% tent completion + 10% word mastery.</p>
+      <div class="recordsWrap">
+        <table id="recordsTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Student</th>
+              <th>Level</th>
+              <th>Result</th>
+              <th>Grade</th>
+              <th>Accuracy</th>
+              <th>Completion</th>
+              <th>Mastery</th>
+              <th>Correct</th>
+              <th>Wrong</th>
+              <th>Best Combo</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+        <div id="recordsEmpty" class="hidden">No saved sessions yet.</div>
+      </div>
+      <div class="buttonRow">
+        <button id="exportGradesButton" class="primary">Export Grades CSV</button>
+        <button id="clearRecordsButton" class="secondary danger">Clear Records</button>
+        <button id="closeRecordsButton" class="secondary">Close</button>
+      </div>
     </section>
 
     <div id="spellBox" class="hidden">
-      <div id="targetLabel">SPELL TO CAST</div>
+      <div id="targetLabel">SPELL THE HIGHLIGHTED CLOWN</div>
       <div id="targetWord">THE</div>
       <div id="typedWord">&nbsp;</div>
-      <div id="spellHint">Arrow keys move • Type letters • Backspace fixes • Enter casts</div>
+      <div id="spellHint">Arrow keys move • Type letters • Backspace fixes • Enter casts • Tab changes target • Escape pauses</div>
+      <div id="spellActions"><button id="changeTargetButton" type="button">Change Target</button></div>
     </div>
 
     <div id="statusMessage"></div>
+    <button id="pauseButton" title="Pause game" aria-label="Pause game" disabled>⏸</button>
     <button id="muteButton" title="Toggle sound" aria-label="Toggle sound">🔊</button>
   </div>
 
@@ -263,16 +476,40 @@
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
   const startPanel = document.getElementById("startPanel");
+  const pausePanel = document.getElementById("pausePanel");
+  const wordsPanel = document.getElementById("wordsPanel");
   const endPanel = document.getElementById("endPanel");
+  const recordsPanel = document.getElementById("recordsPanel");
   const startButton = document.getElementById("startButton");
   const restartButton = document.getElementById("restartButton");
+  const resumeButton = document.getElementById("resumeButton");
+  const changeWordsButton = document.getElementById("changeWordsButton");
+  const applyWordsButton = document.getElementById("applyWordsButton");
+  const cancelWordsButton = document.getElementById("cancelWordsButton");
+  const quitButton = document.getElementById("quitButton");
+  const openRecordsButton = document.getElementById("openRecordsButton");
+  const pauseRecordsButton = document.getElementById("pauseRecordsButton");
+  const endRecordsButton = document.getElementById("endRecordsButton");
+  const closeRecordsButton = document.getElementById("closeRecordsButton");
+  const clearRecordsButton = document.getElementById("clearRecordsButton");
+  const exportGradesButton = document.getElementById("exportGradesButton");
+  const exportLatestButton = document.getElementById("exportLatestButton");
+  const recordsBody = document.getElementById("recordsBody");
+  const recordsTable = document.getElementById("recordsTable");
+  const recordsEmpty = document.getElementById("recordsEmpty");
+  const studentNameInput = document.getElementById("studentName");
   const gradeSelect = document.getElementById("gradeSelect");
+  const customWordsGroup = document.getElementById("customWordsGroup");
+  const customWordsInput = document.getElementById("customWords");
+  const wordEditor = document.getElementById("wordEditor");
   const spellBox = document.getElementById("spellBox");
   const targetWordEl = document.getElementById("targetWord");
   const typedWordEl = document.getElementById("typedWord");
+  const changeTargetButton = document.getElementById("changeTargetButton");
   const statusMessage = document.getElementById("statusMessage");
   const endTitle = document.getElementById("endTitle");
   const endStats = document.getElementById("endStats");
+  const pauseButton = document.getElementById("pauseButton");
   const muteButton = document.getElementById("muteButton");
 
   const DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -321,7 +558,18 @@
   let audioCtx = null;
   let wordPool = WORDS.grade1;
   let lastWord = "";
+  let targetClown = null;
+  let nextClownId = 1;
+  let wordStats = Object.create(null);
+  let currentStudent = "";
+  let currentLevel = "Grade 1";
+  let sessionSaved = false;
+  let latestRecord = null;
+  let recordsReturnState = "menu";
 
+  const STORAGE_KEY = "clownword-desert-grade-records-v1";
+  const LAST_STUDENT_KEY = "clownword-desert-last-student";
+  const CUSTOM_WORDS_KEY = "clownword-desert-custom-words-v1";
   const keys = new Set();
   const camera = { x: 0, y: 0 };
   const player = {
@@ -337,6 +585,275 @@
   let floaters = [];
   let props = [];
   let dunes = [];
+
+  function getRecords() {
+    try {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveRecords(records) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  function levelLabel(value) {
+    return gradeSelect.options[gradeSelect.selectedIndex]?.textContent || value;
+  }
+
+  function parseWordList(value) {
+    const words = String(value || "")
+      .split(/[\s,;]+/)
+      .map(word => word.trim().toLowerCase())
+      .map(word => word.replace(/^[^a-z]+|[^a-z'-]+$/g, ""))
+      .filter(word => /^[a-z][a-z'-]{0,23}$/i.test(word));
+    return [...new Set(words)];
+  }
+
+  function saveCustomWords(words) {
+    const value = words.join("\n");
+    localStorage.setItem(CUSTOM_WORDS_KEY, value);
+    customWordsInput.value = value;
+  }
+
+  function recordWordAttempt(word, correct) {
+    const key = String(word || "").toLowerCase();
+    if (!key) return;
+    if (!wordStats[key]) wordStats[key] = { word: key, attempts: 0, correct: 0 };
+    wordStats[key].attempts++;
+    if (correct) wordStats[key].correct++;
+  }
+
+  function calculateGrade(won) {
+    const attempts = correctCount + wrongCount;
+    const accuracy = attempts ? (correctCount / attempts) * 100 : 0;
+    const sealed = tents.filter(t => t.sealed).length;
+    const completion = tents.length ? (sealed / tents.length) * 100 : 0;
+    const attemptedWords = Object.values(wordStats);
+    const masteredWords = attemptedWords.filter(item => item.correct > 0).length;
+    const mastery = attemptedWords.length ? (masteredWords / attemptedWords.length) * 100 : 0;
+    const numeric = Math.round(accuracy * .7 + completion * .2 + mastery * .1);
+    const letter =
+      numeric >= 90 ? "A" :
+      numeric >= 80 ? "B" :
+      numeric >= 70 ? "C" :
+      numeric >= 60 ? "D" : "F";
+
+    return {
+      accuracy: Math.round(accuracy * 10) / 10,
+      completion: Math.round(completion * 10) / 10,
+      mastery: Math.round(mastery * 10) / 10,
+      wordsMastered: masteredWords,
+      wordsAttempted: attemptedWords.length,
+      numeric,
+      letter,
+      attempts,
+      sealed,
+      totalTents: tents.length,
+      result: won ? "Completed" : "Not completed"
+    };
+  }
+
+  function makeSessionRecord(won) {
+    const grade = calculateGrade(won);
+    return {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      timestamp: new Date().toISOString(),
+      student: currentStudent,
+      level: currentLevel,
+      result: grade.result,
+      grade: grade.numeric,
+      letterGrade: grade.letter,
+      accuracy: grade.accuracy,
+      completion: grade.completion,
+      mastery: grade.mastery,
+      wordsMastered: grade.wordsMastered,
+      wordsAttempted: grade.wordsAttempted,
+      wordList: wordPool.join(" "),
+      wordResults: Object.values(wordStats),
+      correct: correctCount,
+      wrong: wrongCount,
+      attempts: grade.attempts,
+      tentsSealed: grade.sealed,
+      tentsTotal: grade.totalTents,
+      bestCombo,
+      elapsedSeconds: Math.round(elapsed)
+    };
+  }
+
+  function saveCurrentSession(won) {
+    if (sessionSaved) return latestRecord;
+    latestRecord = makeSessionRecord(won);
+    const records = getRecords();
+    records.push(latestRecord);
+    saveRecords(records);
+    sessionSaved = true;
+    return latestRecord;
+  }
+
+  function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function renderRecords() {
+    const records = getRecords().slice().reverse();
+    recordsBody.innerHTML = "";
+    recordsEmpty.classList.toggle("hidden", records.length > 0);
+    recordsTable.classList.toggle("hidden", records.length === 0);
+
+    for (const record of records) {
+      const row = document.createElement("tr");
+      const date = new Date(record.timestamp);
+      row.innerHTML = `
+        <td>${escapeHtml(date.toLocaleString())}</td>
+        <td>${escapeHtml(record.student)}</td>
+        <td>${escapeHtml(record.level)}</td>
+        <td>${escapeHtml(record.result)}</td>
+        <td><span class="gradeBadge">${escapeHtml(record.grade)}% ${escapeHtml(record.letterGrade)}</span></td>
+        <td>${escapeHtml(record.accuracy)}%</td>
+        <td>${escapeHtml(record.completion)}%</td>
+        <td>${escapeHtml(record.mastery ?? 0)}%</td>
+        <td>${escapeHtml(record.correct)}</td>
+        <td>${escapeHtml(record.wrong)}</td>
+        <td>${escapeHtml(record.bestCombo)}</td>
+        <td>${escapeHtml(formatDuration(record.elapsedSeconds))}</td>
+      `;
+      recordsBody.appendChild(row);
+    }
+  }
+
+  function openRecords(fromState = state) {
+    recordsReturnState = fromState;
+    startPanel.classList.add("hidden");
+    pausePanel.classList.add("hidden");
+    wordsPanel.classList.add("hidden");
+    endPanel.classList.add("hidden");
+    recordsPanel.classList.remove("hidden");
+    pauseButton.disabled = true;
+    renderRecords();
+  }
+
+  function closeRecords() {
+    recordsPanel.classList.add("hidden");
+    if (recordsReturnState === "paused") {
+      pauseButton.disabled = false;
+      pausePanel.classList.remove("hidden");
+    } else if (recordsReturnState === "won" || recordsReturnState === "lost") {
+      endPanel.classList.remove("hidden");
+    } else {
+      startPanel.classList.remove("hidden");
+    }
+  }
+
+  function csvCell(value) {
+    const text = String(value ?? "");
+    return `"${text.replaceAll('"', '""')}"`;
+  }
+
+  function recordsToCsv(records) {
+    const headers = [
+      "Date", "Student", "Level", "Result", "Numeric Grade", "Letter Grade",
+      "Accuracy Percent", "Completion Percent", "Mastery Percent", "Words Mastered",
+      "Words Attempted", "Correct", "Wrong", "Attempts", "Tents Sealed", "Tents Total",
+      "Best Combo", "Elapsed Seconds", "Word List"
+    ];
+    const rows = records.map(record => [
+      record.timestamp,
+      record.student,
+      record.level,
+      record.result,
+      record.grade,
+      record.letterGrade,
+      record.accuracy,
+      record.completion,
+      record.mastery ?? 0,
+      record.wordsMastered ?? 0,
+      record.wordsAttempted ?? 0,
+      record.correct,
+      record.wrong,
+      record.attempts,
+      record.tentsSealed,
+      record.tentsTotal,
+      record.bestCombo,
+      record.elapsedSeconds,
+      record.wordList || ""
+    ]);
+    return [headers, ...rows].map(row => row.map(csvCell).join(",")).join("\n");
+  }
+
+  function downloadCsv(records, filename) {
+    if (!records.length) {
+      alert("There are no saved grades to export.");
+      return;
+    }
+    const blob = new Blob(["\uFEFF" + recordsToCsv(records)], {
+      type: "text/csv;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function exportAllGrades() {
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(getRecords(), `clownword-desert-grades-${date}.csv`);
+  }
+
+  function exportLatestGrade() {
+    if (!latestRecord) {
+      alert("No completed session is available to export.");
+      return;
+    }
+    const safeName = latestRecord.student
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-|-$/g, "")
+      .toLowerCase() || "student";
+    downloadCsv([latestRecord], `${safeName}-clownword-grade.csv`);
+  }
+
+  function togglePause(forcePause = null) {
+    const shouldPause = forcePause ?? state === "playing";
+
+    if (shouldPause && state === "playing") {
+      state = "paused";
+      keys.clear();
+      spellBox.classList.add("hidden");
+      pausePanel.classList.remove("hidden");
+      pauseButton.textContent = "▶";
+      pauseButton.title = "Resume game";
+      pauseButton.setAttribute("aria-label", "Resume game");
+      return;
+    }
+
+    if (!shouldPause && state === "paused") {
+      pausePanel.classList.add("hidden");
+      spellBox.classList.remove("hidden");
+      state = "playing";
+      pauseButton.textContent = "⏸";
+      pauseButton.title = "Pause game";
+      pauseButton.setAttribute("aria-label", "Pause game");
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+  }
 
   function resize() {
     const w = innerWidth;
@@ -418,16 +935,66 @@
     camera.y = player.y - innerHeight / 2;
   }
 
-  function chooseWord() {
+  function randomPoolWord() {
     let next = lastWord;
     let tries = 0;
     while (next === lastWord && tries++ < 10) {
       next = wordPool[Math.floor(Math.random() * wordPool.length)];
     }
-    lastWord = next;
-    target = next.toLowerCase();
+    lastWord = next || "the";
+    return lastWord.toLowerCase();
+  }
+
+  function livingClownsByDistance() {
+    return clowns
+      .filter(clown => !clown.dead)
+      .slice()
+      .sort((a, b) =>
+        dist(player.x, player.y, a.x, a.y) - dist(player.x, player.y, b.x, b.y)
+      );
+  }
+
+  function chooseWord(forceNewTarget = false) {
+    const living = livingClownsByDistance();
+    const targetStillAlive = targetClown && living.includes(targetClown);
+
+    if (forceNewTarget || !targetStillAlive) {
+      targetClown = living[0] || null;
+    }
+
+    target = targetClown ? targetClown.word : randomPoolWord();
     typed = "";
     updateSpellUI();
+  }
+
+  function cycleTarget() {
+    const living = livingClownsByDistance();
+    if (!living.length) {
+      targetClown = null;
+      target = randomPoolWord();
+      typed = "";
+      updateSpellUI();
+      showStatus("NEW PRACTICE WORD");
+      return;
+    }
+
+    const currentIndex = living.indexOf(targetClown);
+    targetClown = living[(currentIndex + 1 + living.length) % living.length];
+    target = targetClown.word;
+    typed = "";
+    updateSpellUI();
+    showStatus(`TARGET: ${target.toUpperCase()}`);
+  }
+
+  function refreshTargetFromClowns() {
+    if (typed) return;
+    const living = livingClownsByDistance();
+    if (targetClown && living.includes(targetClown)) return;
+    if (living.length) {
+      targetClown = living[0];
+      target = targetClown.word;
+      updateSpellUI();
+    }
   }
 
   function updateSpellUI() {
@@ -438,17 +1005,50 @@
   }
 
   function startGame() {
-    wordPool = WORDS[gradeSelect.value] || WORDS.grade1;
+    const enteredName = studentNameInput.value.trim();
+    if (!enteredName) {
+      alert("Enter the student's name before starting.");
+      studentNameInput.focus();
+      return;
+    }
+
+    currentStudent = enteredName;
+    currentLevel = levelLabel(gradeSelect.value);
+    localStorage.setItem(LAST_STUDENT_KEY, currentStudent);
+
+    if (gradeSelect.value === "custom") {
+      const customWords = parseWordList(customWordsInput.value);
+      if (customWords.length < 5) {
+        alert("Enter at least five valid custom words before starting.");
+        customWordsInput.focus();
+        return;
+      }
+      wordPool = customWords;
+      saveCustomWords(customWords);
+    } else {
+      wordPool = WORDS[gradeSelect.value] || WORDS.grade1;
+    }
+
+    sessionSaved = false;
+    latestRecord = null;
     elapsed = 0;
     correctCount = 0;
     wrongCount = 0;
     combo = 0;
     bestCombo = 0;
+    wordStats = Object.create(null);
+    targetClown = null;
+    nextClownId = 1;
     initWorld();
     chooseWord();
     startPanel.classList.add("hidden");
+    pausePanel.classList.add("hidden");
+    wordsPanel.classList.add("hidden");
     endPanel.classList.add("hidden");
+    recordsPanel.classList.add("hidden");
     spellBox.classList.remove("hidden");
+    pauseButton.disabled = false;
+    pauseButton.textContent = "⏸";
     state = "playing";
     last = performance.now();
     unlockAudio();
@@ -457,17 +1057,27 @@
   }
 
   function endGame(won) {
+    if (state === "won" || state === "lost") return;
     state = won ? "won" : "lost";
+    keys.clear();
+    pausePanel.classList.add("hidden");
     spellBox.classList.add("hidden");
     endPanel.classList.remove("hidden");
+    pauseButton.disabled = true;
     endTitle.textContent = won ? "DESERT SAVED!" : "THE CLOWNS TOOK OVER";
-    const mins = Math.floor(elapsed / 60);
-    const secs = Math.floor(elapsed % 60).toString().padStart(2, "0");
+
+    const record = saveCurrentSession(won);
     endStats.innerHTML =
       `${won ? "Every circus tent was sealed." : "Keep practicing and try another run."}<br>` +
-      `<strong>${correctCount}</strong> correct spells · ` +
-      `<strong>${bestCombo}</strong> best combo · ` +
-      `<strong>${mins}:${secs}</strong> survival time`;
+      `<strong>${escapeHtml(currentStudent)}</strong> · ${escapeHtml(currentLevel)}<br>` +
+      `<strong>${record.correct}</strong> correct · ` +
+      `<strong>${record.wrong}</strong> wrong · ` +
+      `<strong>${record.accuracy}%</strong> accuracy<br>` +
+      `<strong>${record.completion}%</strong> completion · ` +
+      `<strong>${record.mastery}%</strong> word mastery<br>` +
+      `<strong>${record.bestCombo}</strong> best combo · ` +
+      `<strong>${formatDuration(record.elapsedSeconds)}</strong> time<br>` +
+      `<span class="gradeBadge">Grade ${record.grade}% (${record.letterGrade})</span>`;
     if (won) {
       chord([523, 659, 784], .5);
     } else {
@@ -477,9 +1087,78 @@
 
   startButton.addEventListener("click", startGame);
   restartButton.addEventListener("click", startGame);
+  resumeButton.addEventListener("click", () => togglePause(false));
+  changeTargetButton.addEventListener("click", (event) => {
+    cycleTarget();
+    event.currentTarget.blur();
+  });
+  gradeSelect.addEventListener("change", () => {
+    customWordsGroup.classList.toggle("hidden", gradeSelect.value !== "custom");
+  });
+  changeWordsButton.addEventListener("click", () => {
+    pausePanel.classList.add("hidden");
+    wordEditor.value = wordPool.join("\n");
+    wordsPanel.classList.remove("hidden");
+    wordEditor.focus();
+  });
+  cancelWordsButton.addEventListener("click", () => {
+    wordsPanel.classList.add("hidden");
+    pausePanel.classList.remove("hidden");
+  });
+  applyWordsButton.addEventListener("click", () => {
+    const words = parseWordList(wordEditor.value);
+    if (words.length < 5) {
+      alert("Enter at least five valid words.");
+      wordEditor.focus();
+      return;
+    }
+    wordPool = words;
+    currentLevel = "Custom Word List";
+    gradeSelect.value = "custom";
+    customWordsGroup.classList.remove("hidden");
+    saveCustomWords(words);
+    clowns.forEach(clown => {
+      if (!clown.dead) clown.word = randomPoolWord();
+    });
+    targetClown = null;
+    chooseWord(true);
+    wordsPanel.classList.add("hidden");
+    pausePanel.classList.remove("hidden");
+    showStatus("WORD LIST UPDATED");
+  });
+  pauseButton.addEventListener("click", () => {
+    if (state === "playing") togglePause(true);
+    else if (state === "paused") togglePause(false);
+  });
+  quitButton.addEventListener("click", () => endGame(false));
+  openRecordsButton.addEventListener("click", () => openRecords("menu"));
+  pauseRecordsButton.addEventListener("click", () => openRecords("paused"));
+  endRecordsButton.addEventListener("click", () => openRecords(state));
+  closeRecordsButton.addEventListener("click", closeRecords);
+  exportGradesButton.addEventListener("click", exportAllGrades);
+  exportLatestButton.addEventListener("click", exportLatestGrade);
+  clearRecordsButton.addEventListener("click", () => {
+    if (!confirm("Delete every saved ClownWord grade from this browser?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    renderRecords();
+  });
 
   document.addEventListener("keydown", (e) => {
     const k = e.key.toLowerCase();
+    const typingInField = e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLSelectElement ||
+      e.target instanceof HTMLTextAreaElement;
+
+    if (typingInField) {
+      if (e.key === "Enter" && e.target === studentNameInput) startGame();
+      return;
+    }
+
+    if (e.key === "Escape" && (state === "playing" || state === "paused")) {
+      e.preventDefault();
+      togglePause(state === "playing");
+      return;
+    }
 
     if (["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)) {
       e.preventDefault();
@@ -495,8 +1174,14 @@
       return;
     }
 
-    if (/^[a-z]$/i.test(e.key)) {
-      if (typed.length < 18) typed += e.key.toLowerCase();
+    if (e.key === "Tab") {
+      e.preventDefault();
+      cycleTarget();
+      return;
+    }
+
+    if (/^[a-z'-]$/i.test(e.key)) {
+      if (typed.length < 24) typed += e.key.toLowerCase();
       updateSpellUI();
       beep(460 + typed.length * 32, .02, "square", .012);
     } else if (e.key === "Backspace") {
@@ -511,7 +1196,9 @@
 
   function castSpell() {
     if (!typed) return;
-    if (typed.toLowerCase() === target.toLowerCase()) {
+    const isCorrect = typed.toLowerCase() === target.toLowerCase();
+    recordWordAttempt(target, isCorrect);
+    if (isCorrect) {
       correctCount++;
       combo++;
       bestCombo = Math.max(bestCombo, combo);
@@ -525,7 +1212,7 @@
       spawnPenaltyClown();
       beep(105, .18, "sawtooth", .06);
     }
-    chooseWord();
+    chooseWord(true);
   }
 
   function correctSpell() {
@@ -536,17 +1223,18 @@
       .map(t => ({ t, d: dist(player.x, player.y, t.x, t.y) }))
       .sort((a,b) => a.d - b.d);
 
-    // Correct spelling always removes clown villains.
-    const power = 3 + Math.min(5, Math.floor(combo / 2));
-    const nearest = clowns
-      .map(c => ({ c, d: dist(player.x, player.y, c.x, c.y) }))
-      .sort((a,b) => a.d - b.d)
+    // A correct spelling defeats clowns carrying the target word.
+    const power = 1 + Math.min(4, Math.floor(combo / 3));
+    const matching = clowns
+      .filter(clown => !clown.dead && clown.word === target)
+      .map(clown => ({ clown, distance: dist(player.x, player.y, clown.x, clown.y) }))
+      .sort((a, b) => a.distance - b.distance)
       .slice(0, power);
 
-    nearest.forEach(({ c }, idx) => {
-      c.dead = true;
-      burst(c.x, c.y, 13, idx % 2 ? "#57c7ff" : "#ffd166");
-      floaters.push({ x: c.x, y: c.y - 20, text: "POOF!", life: 1, max: 1 });
+    matching.forEach(({ clown }, index) => {
+      clown.dead = true;
+      burst(clown.x, clown.y, 13, index % 2 ? "#57c7ff" : "#ffd166");
+      floaters.push({ x: clown.x, y: clown.y - 42, text: "POOF!", life: 1, max: 1 });
     });
 
     // If near a tent, spelling also seals it one step at a time.
@@ -602,6 +1290,8 @@
 
   function makeClown(x, y, tent, angry = false) {
     return {
+      id: nextClownId++,
+      word: randomPoolWord(),
       x, y,
       vx: 0, vy: 0,
       r: angry ? 19 : rand(15, 19),
@@ -627,6 +1317,7 @@
       ));
     }
     burst(tent.x, tent.y + 15, 12, "#d79aef");
+    refreshTargetFromClowns();
     beep(150, .09, "triangle", .03);
   }
 
@@ -738,6 +1429,7 @@
     });
 
     clowns = clowns.filter(c => !c.dead);
+    refreshTargetFromClowns();
 
     particles.forEach(p => {
       p.life -= dt;
@@ -1000,16 +1692,25 @@
   }
 
   function drawClowns() {
-    clowns.forEach(c => {
-      if (!visible(c.x, c.y, 60)) return;
+    const visibleClowns = clowns.filter(clown => visible(clown.x, clown.y, 100));
+
+    // Draw the clown bodies first so every word label remains readable on top.
+    visibleClowns.forEach(c => {
       const p = worldToScreen(c.x, c.y);
       ctx.save();
       ctx.translate(p.x, p.y + Math.sin(c.phase * 2) * 2);
 
+      if (c === targetClown) {
+        ctx.strokeStyle = "rgba(255,241,166,.95)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, c.r + 13 + Math.sin(elapsed * 7) * 2, 0, TAU);
+        ctx.stroke();
+      }
+
       ctx.fillStyle = "rgba(0,0,0,.2)";
       ctx.beginPath(); ctx.ellipse(3, c.r + 10, c.r + 5, 7, 0, 0, TAU); ctx.fill();
 
-      // legs
       ctx.strokeStyle = "#2c1b35";
       ctx.lineWidth = 5;
       ctx.lineCap = "round";
@@ -1018,17 +1719,14 @@
       ctx.moveTo(7, c.r - 2); ctx.lineTo(9, c.r + 13);
       ctx.stroke();
 
-      // body
       ctx.fillStyle = c.color;
       ctx.beginPath(); ctx.ellipse(0, 5, c.r, c.r + 4, 0, 0, TAU); ctx.fill();
       ctx.fillStyle = "#ffd166";
       ctx.beginPath(); ctx.arc(0, -2, 3, 0, TAU); ctx.arc(0, 8, 3, 0, TAU); ctx.fill();
 
-      // head
       ctx.fillStyle = "#fff3df";
       ctx.beginPath(); ctx.arc(0, -c.r + 2, c.r * .78, 0, TAU); ctx.fill();
 
-      // hair
       ctx.fillStyle = c.angry ? "#ff2c55" : "#8e44ad";
       for (let a = Math.PI; a <= TAU; a += Math.PI / 5) {
         ctx.beginPath();
@@ -1036,20 +1734,59 @@
         ctx.fill();
       }
 
-      // eyes
       ctx.fillStyle = "#20140d";
       ctx.beginPath(); ctx.arc(-5, -c.r, 2.5, 0, TAU); ctx.arc(5, -c.r, 2.5, 0, TAU); ctx.fill();
       ctx.fillStyle = "#ef476f";
       ctx.beginPath(); ctx.arc(0, -c.r + 5, 4, 0, TAU); ctx.fill();
 
-      // grin
       ctx.strokeStyle = "#7f1d38";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(0, -c.r + 7, 8, .1, Math.PI - .1);
       ctx.stroke();
-
       ctx.restore();
+    });
+
+    // Stack overlapping labels upward instead of drawing words on top of each other.
+    const occupied = [];
+    const labelData = visibleClowns
+      .map(clown => ({ clown, screen: worldToScreen(clown.x, clown.y) }))
+      .sort((a, b) => a.screen.y - b.screen.y);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    labelData.forEach(({ clown, screen }, index) => {
+      const word = clown.word.toUpperCase();
+      const fontSize = word.length > 10 ? 11 : word.length > 7 ? 12 : 14;
+      ctx.font = `1000 ${fontSize}px system-ui`;
+      const width = Math.max(44, ctx.measureText(word).width + 18);
+      const height = 24;
+      let x = clamp(screen.x, width / 2 + 6, innerWidth - width / 2 - 6);
+      let y = screen.y - clown.r - 31;
+      let box = { left: x - width / 2, right: x + width / 2, top: y - height / 2, bottom: y + height / 2 };
+
+      for (let tries = 0; tries < 7; tries++) {
+        const overlaps = occupied.some(other => !(
+          box.right < other.left || box.left > other.right ||
+          box.bottom < other.top || box.top > other.bottom
+        ));
+        if (!overlaps) break;
+        y -= height + 3;
+        if (tries % 2 === 1) x += index % 2 ? 10 : -10;
+        x = clamp(x, width / 2 + 6, innerWidth - width / 2 - 6);
+        box = { left: x - width / 2, right: x + width / 2, top: y - height / 2, bottom: y + height / 2 };
+      }
+      occupied.push(box);
+
+      ctx.fillStyle = clown === targetClown ? "rgba(255,209,102,.97)" : "rgba(32,20,13,.9)";
+      roundRect(ctx, box.left, box.top, width, height, 8);
+      ctx.fill();
+      ctx.strokeStyle = clown === targetClown ? "#fff4ad" : "rgba(255,255,255,.28)";
+      ctx.lineWidth = clown === targetClown ? 2 : 1;
+      ctx.stroke();
+      ctx.fillStyle = clown === targetClown ? "#26170d" : "#fff4d2";
+      ctx.fillText(word, x, y + .5);
     });
   }
 
@@ -1281,6 +2018,11 @@
     draw();
     requestAnimationFrame(loop);
   }
+
+  studentNameInput.value = localStorage.getItem(LAST_STUDENT_KEY) || "";
+  studentNameInput.value = localStorage.getItem(LAST_STUDENT_KEY) || "";
+  customWordsInput.value = localStorage.getItem(CUSTOM_WORDS_KEY) || "";
+  customWordsGroup.classList.toggle("hidden", gradeSelect.value !== "custom");
 
   initWorld();
   draw();
