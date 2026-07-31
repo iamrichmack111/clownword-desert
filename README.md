@@ -1,57 +1,26 @@
 # ClownWord Desert
 
-[![Version](https://img.shields.io/badge/version-1.0.0-f4af39)](../../releases/tag/v1.0.0)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Made with JavaScript](https://img.shields.io/badge/JavaScript-Canvas-f7df1e?logo=javascript&logoColor=111)](index.html)
-[![Play Online](https://img.shields.io/badge/Play-GitHub%20Pages-57c7ff)](https://iamrichmack111.github.io/clownword-desert/)
+ClownWord Desert is a 2D open-world educational browser game where players explore a desert, survive clown hordes, and defeat enemies by correctly spelling sight words.
 
-**ClownWord Desert** is a standalone 2D open-world educational browser game. Circus tents have appeared throughout a scrolling desert and continuously release clown hordes. Players survive by moving through the world and correctly spelling sight words. Correct answers remove clowns; spelling near a tent gradually seals it.
+Circus tents continuously release clown villains. Correct spelling removes nearby clowns, while spelling close to a circus tent gradually seals it. Seal every tent before losing all your hearts to save the desert.
 
-## Play online
+## Features
 
-**Live game:** https://iamrichmack111.github.io/clownword-desert/
-
-GitHub Pages may take a few minutes to become available after the first publish.
-
-## Highlights
-
-- Large scrolling desert world
-- Eight circus tents with escalating clown hordes
-- Sight-word spelling as the combat system
-- Five selectable word levels
-- Tent-sealing objectives and a clear win condition
-- Combo system with heart recovery
-- Procedural Canvas artwork
-- Web Audio sound effects with a mute control
-- Minimap, health display, score tracking, particles, and screen shake
-- No frameworks, external libraries, accounts, downloads, or internet connection required
-- Desktop browser support and offline play
-
-## Controls
-
-| Action | Control |
-|---|---|
-| Move | Arrow keys |
-| Sprint | Hold `Shift` while moving |
-| Enter letters | Letter keys |
-| Correct typed letters | `Backspace` |
-| Cast the spelling spell | `Enter` |
-| Toggle sound | Speaker button |
-
-Letter keys are reserved entirely for spelling. Words such as `as`, `was`, `said`, and `down` therefore never conflict with movement.
-
-## How to play
-
-1. Select a sight-word level.
-2. Enter the desert.
-3. Use the arrow keys to move toward an active striped circus tent.
-4. Type the displayed sight word and press `Enter`.
-5. Correct spellings remove nearby clown villains.
-6. Correct spellings made near a tent increase its seal progress.
-7. Wrong spellings summon an additional angry clown.
-8. Seal all eight tents before losing all five hearts.
-
-Every ten-word combo restores one heart when the player is below maximum health.
+- Large scrolling 2D desert world
+- Circus tents that release clown hordes
+- Sight-word spelling combat
+- Five vocabulary difficulty levels
+- Tent-sealing objectives
+- Health and combo systems
+- Minimap showing tents and player location
+- Particle effects and screen shake
+- Synthesized sound effects
+- Offline browser support
+- Linux desktop application installer
+- Linux application-menu launcher
+- Linux desktop shortcut
+- Linux uninstaller
+- No external libraries or game engine required
 
 ## Sight-word levels
 
@@ -61,112 +30,221 @@ Every ten-word combo restores one heart when the player is below maximum health.
 - Grade 3+
 - Mixed Challenge
 
-The included vocabulary is stored directly in `index.html`, making it straightforward to add custom lists.
+## Controls
 
-## Run locally
+| Action | Control |
+|---|---|
+| Move | Arrow keys |
+| Sprint | Hold `Shift` |
+| Enter spelling letters | Letter keys |
+| Remove a typed letter | `Backspace` |
+| Cast spelling spell | `Enter` |
+| Toggle sound | Speaker button |
 
-No build step is required.
+Letter keys are reserved entirely for spelling. Words containing `W`, `A`, `S`, or `D`, such as `was`, `as`, `said`, and `down`, do not conflict with movement.
 
-### Directly from the browser
+## Gameplay
 
-Open `index.html` in Chrome, Firefox, Edge, or Safari.
+1. Select a sight-word difficulty.
+2. Enter the desert.
+3. Move toward an active striped circus tent.
+4. Type the sight word displayed at the bottom of the screen.
+5. Press `Enter` to cast the spelling spell.
+6. Correct answers remove nearby clowns.
+7. Correct answers near a tent increase its seal progress.
+8. Incorrect answers summon another angry clown.
+9. Seal all eight circus tents to win.
 
-### With a local server
+A ten-word spelling combo restores one heart when the player is below maximum health.
+
+## Install as a Linux desktop application
+
+Clone the repository:
+
+```bash
+git clone https://github.com/iamrichmack111/clownword-desert.git
+cd clownword-desert
+```
+
+Run the installer:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+After installation, launch **ClownWord Desert** from the Games or Education section of your Linux application menu.
+
+You can also launch it from the terminal:
+
+```bash
+clownword-desert
+```
+
+The installer places the application files in:
+
+```text
+~/.local/share/clownword-desert
+```
+
+The command-line launcher is installed at:
+
+```text
+~/.local/bin/clownword-desert
+```
+
+The application menu entry is installed at:
+
+```text
+~/.local/share/applications/clownword-desert.desktop
+```
+
+When a `~/Desktop` folder exists, the installer also creates a desktop shortcut.
+
+## Uninstall
+
+Run:
+
+```bash
+clownword-desert-uninstall
+```
+
+You can also run the uninstaller from the repository folder:
+
+```bash
+./uninstall.sh
+```
+
+The uninstaller removes:
+
+- Installed game files
+- Browser application profile
+- Application-menu entry
+- Desktop shortcut
+- Command-line launcher
+- Uninstaller command
+
+It does not delete the cloned Git repository.
+
+## Play without installing
+
+Open `index.html` directly in a modern browser.
+
+You may also start a local web server:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Then open `http://localhost:8080`.
+Then open:
+
+```text
+http://localhost:8080
+```
 
 ## Project structure
 
 ```text
 clownword-desert/
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   └── pull_request_template.md
-├── .gitignore
-├── .nojekyll
-├── CHANGELOG.md
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── LICENSE
-├── README.md
-├── VERSION
-├── icon.svg
 ├── index.html
+├── install.sh
+├── uninstall.sh
+├── icon.svg
 ├── manifest.webmanifest
-└── publish_to_github.sh
+├── LICENSE
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+└── README.md
 ```
 
-## Technical design
+## Technology
 
-The complete game is implemented with HTML, CSS, JavaScript, and the Canvas 2D API. The game loop uses `requestAnimationFrame`, while the world, camera, player, tents, enemies, particles, props, minimap, and HUD are rendered without external image assets. Simple synthesized effects are generated through the Web Audio API.
+ClownWord Desert uses:
 
-## Customize the game
+- HTML5
+- CSS
+- JavaScript
+- Canvas 2D API
+- Web Audio API
+- `requestAnimationFrame`
+- Linux desktop entry files
 
-### Add or change words
+The graphics, world, player, enemies, tents, particles, props, minimap, interface, and sound effects are generated without external assets or JavaScript frameworks.
 
-Find the `WORDS` object in `index.html`:
+## Customize the sight words
+
+Open `index.html` and locate the `WORDS` object:
 
 ```javascript
 const WORDS = {
-  preK: ["a", "and", "away"],
-  grade1: ["after", "again", "any"]
+  preK: [
+    "a",
+    "and",
+    "away"
+  ],
+
+  grade1: [
+    "after",
+    "again",
+    "any"
+  ]
 };
 ```
 
-Add lowercase words to the desired list.
+Add lowercase words to the appropriate list.
 
-### Adjust difficulty
+## Customize difficulty
 
-Useful values in `index.html` include:
+Difficulty-related settings inside `index.html` include:
 
 - `player.maxHearts`
 - `player.speed`
-- each tent's `needed` seal count
-- clown `speed`
-- tent `spawnTimer`
-- the maximum active clown count
+- Tent seal requirements
+- Clown movement speed
+- Tent spawn timers
+- Maximum active clown count
+- Number of clowns removed per correct word
 
-## Publish with GitHub CLI
+## Releases
 
-The included script initializes Git, creates the initial commit, creates tag `v1.0.0`, creates or updates the public GitHub repository, pushes `main` and the tag, configures topics and repository settings, creates a GitHub Release, and enables GitHub Pages.
+### v1.1.0
 
-```bash
-chmod +x publish_to_github.sh
-./publish_to_github.sh
+- Added Linux installer
+- Added Linux uninstaller
+- Added desktop application launcher
+- Added application-menu entry
+- Added desktop shortcut support
+- Fixed spelling conflicts with movement controls
+
+### v1.0.0
+
+- Initial playable release
+- Added scrolling desert world
+- Added circus tents and clown hordes
+- Added sight-word spelling combat
+- Added five word levels
+- Added tent sealing and win conditions
+- Added health, combo, minimap, sound, and visual effects
+
+## Repository
+
+GitHub:
+
+```text
+https://github.com/iamrichmack111/clownword-desert
 ```
 
-Override the defaults when needed:
+Releases:
 
-```bash
-GITHUB_OWNER=obsidiandevcoder \
-REPO_NAME=clownword-desert \
-VERSION=v1.0.0 \
-./publish_to_github.sh
+```text
+https://github.com/iamrichmack111/clownword-desert/releases
 ```
-
-## Roadmap
-
-- Teacher-managed custom word lists
-- Mobile touch controls and an on-screen keyboard
-- Boss clowns and special tent types
-- Multiple desert regions
-- Progress saving
-- Spoken-word accessibility mode
-- Player profiles and classroom scoreboards
-- Multiplayer spelling challenges
-
-## Contributing
-
-Bug reports and educational feature ideas are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Released under the [MIT License](LICENSE).
+ClownWord Desert is released under the MIT License.
 
----
+## Author
 
-Created under the **Richmack** educational game portfolio.
+Created by Richmack as part of the Richmack educational game portfolio.
