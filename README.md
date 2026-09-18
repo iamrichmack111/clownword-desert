@@ -285,3 +285,7 @@ ClownWord Desert is released under the MIT License.
 ## Author
 
 Created by Richmack as part of the Richmack educational game portfolio.
+
+## Narrated demo
+
+[▶ Watch the high-quality narrated demo](media/demo/clownword-desert-demo.mp4)
