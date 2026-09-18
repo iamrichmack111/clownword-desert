@@ -1,8 +1,45 @@
 # ClownWord Desert
 
+[![CI/CD](https://github.com/iamrichmack111/clownword-desert/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/iamrichmack111/clownword-desert/actions/workflows/ci-cd.yml)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-f7df1e?logo=javascript&logoColor=000)
+![HTML5](https://img.shields.io/badge/HTML5-Canvas-e34f26?logo=html5&logoColor=fff)
+![Playwright](https://img.shields.io/badge/Playwright-Screenshots-2ead33?logo=playwright&logoColor=fff)
+![Offline](https://img.shields.io/badge/Offline-Ready-4c8bf5)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
+
 ClownWord Desert is a 2D open-world educational browser game where players explore a desert, survive clown hordes, and defeat enemies by correctly spelling sight words.
 
 Circus tents continuously release clown villains. Correct spelling removes nearby clowns, while spelling close to a circus tent gradually seals it. Seal every tent before losing all your hearts to save the desert.
+
+
+## Screenshots
+
+All screenshots below are generated from the real game with Playwright.
+
+### Start screen
+
+![ClownWord Desert start screen](media/screenshots/01-start-screen.png)
+
+### Live desert
+
+![Live desert gameplay](media/screenshots/02-live-desert.png)
+
+### Spelling combat
+
+![Sight-word spelling combat](media/screenshots/03-spelling-combat.png)
+
+### Word controls
+
+![Custom word controls](media/screenshots/04-word-controls.png)
+
+### Grade report
+
+![Session grade report](media/screenshots/05-grade-report.png)
+
+### Student records
+
+![Student records table](media/screenshots/06-student-records.png)
 
 ## Features
 

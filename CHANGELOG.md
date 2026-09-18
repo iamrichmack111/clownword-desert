@@ -2,6 +2,20 @@
 
 All notable changes to ClownWord Desert are documented here.
 
+## [1.1.0] - 2026-09-18
+
+### Added
+
+- Linux installer, uninstaller, application-menu launcher, and desktop shortcut support
+- Playwright-generated README screenshot gallery
+- GitHub Actions CI/CD screenshot validation
+- Narrated demo tooling with Piper Ryan High voice support
+- Repository badges and GitHub topic metadata
+
+### Changed
+
+- Documentation expanded with real gameplay captures and automation details
+
 ## [1.0.0] - 2026-07-30
 
 ### Added
